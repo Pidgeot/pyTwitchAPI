@@ -467,6 +467,8 @@ class ChatSub:
         self._parsed = parsed
         self.sub_type: str = parsed['tags'].get('msg-id')
         """The type of sub given"""
+        self.sub_count: int = int(parsed['tags'].get('msg-param-mass-gift-count', 0))
+        """Amount of subs included in a mass gift event (self.sub_type is "submysterygift"). The individual recipients will have their own ChatSub event following this. 0 for other sub events."""
         self.sub_message: str = parsed['parameters'] if parsed['parameters'] is not None else ''
         """The message that was sent together with the sub"""
         self.sub_plan: str = parsed['tags'].get('msg-param-sub-plan')
@@ -1032,7 +1034,7 @@ class Chat:
             handlers = self._event_handler.get(ChatEvent.RAID, [])
             for handler in handlers:
                 asyncio.ensure_future(handler(parsed))
-        elif parsed['tags'].get('msg-id') in ('sub', 'resub', 'subgift'):
+        elif parsed['tags'].get('msg-id') in ('sub', 'resub', 'subgift', 'submysterygift'):
             sub = ChatSub(self, parsed)
             for handler in self._event_handler.get(ChatEvent.SUB, []):
                 t = asyncio.ensure_future(handler(sub), loop=self._callback_loop)
